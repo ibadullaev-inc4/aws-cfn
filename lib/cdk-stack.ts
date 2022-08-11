@@ -5,6 +5,7 @@ import { join } from 'path';
 import { CfnOutput } from 'aws-cdk-lib';
 import { ImagePullPrincipalType } from 'aws-cdk-lib/aws-codebuild';
 import * as iam from "aws-cdk-lib/aws-iam";
+import { Effect } from 'aws-cdk-lib/aws-iam';
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 export class CdkStack extends cdk.Stack {
@@ -16,7 +17,8 @@ export class CdkStack extends cdk.Stack {
       runtime: Runtime.PYTHON_3_9,
       memorySize: 512,
       // handler: 'app.handler',
-      handler: 'listBuckets.main',
+      // handler: 'listBuckets.main',
+      handler: 'listLambdas.main',
       code: Code.fromAsset(join(__dirname,'../lambdas')),
       environment: {
         NAME: "nariman",
@@ -31,10 +33,16 @@ export class CdkStack extends cdk.Stack {
       resources: ['*']
     });
 
+    const listLambdaPolicy = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['lambda:*'],
+      resources: ['*']
+    })
+
 
     handler.role?.attachInlinePolicy(
       new iam.Policy(this, "list-resources", {
-        statements: [listBucketPolicy]
+        statements: [listBucketPolicy,listLambdaPolicy]
       })
     )
 
